@@ -10,9 +10,9 @@
 
 * **CQRS and event sourcing**: Separating read and write operations into different data stores to optimize for performance and scalability.
 
-* **API gateway pattern**: Implementing a single entry point for external traffic that routes requests to appropriate microservices. The gateway handles cross-cutting concerns like authentication, rate limiting, SSL termination, and request transformation before reaching backend services.
-
 ## Resilience, Communication & Infrastructure Patterns
+
+* **API gateway pattern**: Implementing a single entry point for external traffic that routes requests to appropriate microservices. The gateway handles cross-cutting concerns like authentication, rate limiting, SSL termination, and request transformation before reaching backend services.
 
 * **Circuit breaker and retry logic**: Adding resilience patterns to applications (or through a service mesh) to handle transient failures when calling dependent services through exponential backoff, timeouts, and circuit breakers to prevent cascading failures across the distributed system.
 

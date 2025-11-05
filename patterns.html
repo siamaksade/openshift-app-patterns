@@ -1,0 +1,1962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Migration & Architecture Patterns</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 320px;
+            background: white;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .sidebar-logo {
+            width: 100%;
+            max-width: 180px;
+            margin-bottom: 30px;
+            display: block;
+        }
+
+        .sidebar h2 {
+            color: #EE0000;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #EE0000;
+        }
+
+        .sidebar-category {
+            margin-bottom: 25px;
+        }
+
+        .sidebar-category h3 {
+            color: #CC0000;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .sidebar li {
+            margin-bottom: 5px;
+        }
+
+        .sidebar a {
+            color: #555;
+            text-decoration: none;
+            padding: 10px 12px;
+            display: block;
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-size: 0.95em;
+        }
+
+        .sidebar a:hover {
+            background: #f0f0f0;
+            color: #EE0000;
+        }
+
+        .sidebar a.active {
+            background: #EE0000;
+            color: white;
+            font-weight: 500;
+        }
+
+        .main-content {
+            margin-left: 320px;
+            flex: 1;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 1000px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #EE0000 0%, #CC0000 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            margin-bottom: 40px;
+            border-radius: 8px;
+        }
+
+        header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .pattern {
+            background: white;
+            padding: 40px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .pattern.active {
+            display: block;
+        }
+
+        .pattern h3 {
+            color: #EE0000;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+
+        .pattern-description {
+            margin-bottom: 20px;
+        }
+
+        .pattern-description p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .use-cases {
+            background: white;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+
+        .use-cases h4 {
+            color: #CC0000;
+            margin-bottom: 10px;
+        }
+
+        .use-cases ul {
+            margin-left: 20px;
+        }
+
+        .use-cases li {
+            margin-bottom: 8px;
+        }
+
+        .diagram {
+            margin: 30px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .diagram-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #CC0000;
+        }
+
+        .key-benefits {
+            background: #FFF5F5;
+            padding: 15px 15px 15px 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+            border-left: 4px solid #EE0000;
+        }
+
+        .key-benefits h4 {
+            color: #CC0000;
+            margin-bottom: 10px;
+        }
+
+        .key-benefits ul {
+            margin-left: 20px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                height: auto;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .app-container {
+                flex-direction: column;
+            }
+
+            .pattern {
+                padding: 20px;
+            }
+
+            header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <img src="redhat.svg" alt="Red Hat" class="sidebar-logo">
+            <h2>Patterns</h2>
+
+            <div class="sidebar-category">
+                <h3>Migration & Architecture</h3>
+                <ul>
+                    <li><a href="#containerised-monolith" data-pattern="containerised-monolith">Containerised Monolith</a></li>
+                    <li><a href="#strangling-monolith" data-pattern="strangling-monolith">Strangling the Monolith</a></li>
+                    <li><a href="#cloud-native-frameworks" data-pattern="cloud-native-frameworks">Cloud-Native Frameworks</a></li>
+                    <li><a href="#event-driven" data-pattern="event-driven">Event-Driven Architecture</a></li>
+                    <li><a href="#cqrs" data-pattern="cqrs">CQRS & Event Sourcing</a></li>
+                    <li><a href="#api-gateway" data-pattern="api-gateway">API Gateway</a></li>
+                </ul>
+            </div>
+
+            <div class="sidebar-category">
+                <h3>Resilience & Infrastructure</h3>
+                <ul>
+                    <li><a href="#circuit-breaker" data-pattern="circuit-breaker">Circuit Breaker</a></li>
+                    <li><a href="#service-discovery" data-pattern="service-discovery">Service Discovery</a></li>
+                    <li><a href="#sidecar" data-pattern="sidecar">Sidecar Pattern</a></li>
+                    <li><a href="#service-mesh" data-pattern="service-mesh">Service Mesh</a></li>
+                    <li><a href="#init-container" data-pattern="init-container">Init-Container</a></li>
+                    <li><a href="#operator" data-pattern="operator">Operator Pattern</a></li>
+                </ul>
+            </div>
+
+            <div class="sidebar-category">
+                <h3>Configuration & Lifecycle</h3>
+                <ul>
+                    <li><a href="#externalising-config" data-pattern="externalising-config">Externalising Config</a></li>
+                    <li><a href="#graceful-shutdown" data-pattern="graceful-shutdown">Graceful Shutdown</a></li>
+                    <li><a href="#external-cache" data-pattern="external-cache">External Cache</a></li>
+                    <li><a href="#health-checks" data-pattern="health-checks">Health Checks</a></li>
+                    <li><a href="#umbrella-helm" data-pattern="umbrella-helm">Umbrella Helm Chart</a></li>
+                </ul>
+            </div>
+
+            <div class="sidebar-category">
+                <h3>Storage & Observability</h3>
+                <ul>
+                    <li><a href="#log-stdout" data-pattern="log-stdout">Log to Stdout</a></li>
+                    <li><a href="#observability" data-pattern="observability">Observability</a></li>
+                    <li><a href="#auto-scaling" data-pattern="auto-scaling">Auto-Scaling on Metrics</a></li>
+                    <li><a href="#external-db" data-pattern="external-db">External Database</a></li>
+                    <li><a href="#db-per-service" data-pattern="db-per-service">Database per Service</a></li>
+                    <li><a href="#local-volumes" data-pattern="local-volumes">Local Volumes</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="container">
+                <header>
+                    <h1>Cloud Migration & Architecture Patterns</h1>
+                    <p>A Comprehensive Guide to OpenShift and Kubernetes Application Patterns</p>
+                </header>
+
+                <article class="pattern active" id="containerised-monolith">
+                <h3>Containerised Monolith (Lift & Shift)</h3>
+                <div class="pattern-description">
+                    <p>
+                        The containerised monolith pattern represents the most straightforward migration path to cloud-native platforms like OpenShift. This approach involves packaging your existing monolithic application into a container image without making significant architectural changes to the application itself. The monolith continues to run as a single, cohesive unit, but now benefits from container orchestration capabilities.
+                    </p>
+                    <p>
+                        This strategy is particularly valuable for organizations that need to quickly move applications to the cloud while minimizing risk and development effort. By containerizing the monolith, you can leverage OpenShift's deployment, scaling, and management features without requiring developers to redesign the entire application architecture. The application can be deployed as a stateful pod for applications requiring persistent state, or even as a virtual machine using OpenShift Virtualization for legacy applications with specific OS dependencies.
+                    </p>
+                    <p>
+                        While this pattern doesn't provide all the benefits of microservices architecture, it serves as an excellent first step in a cloud migration journey. It allows teams to gain experience with container technologies and Kubernetes while planning more comprehensive architectural transformations. Organizations can then gradually evolve from this baseline using patterns like strangling the monolith to incrementally decompose the application.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Containerised Monolith Architecture</div>
+                    <div class="mermaid">
+                    graph TB
+                        subgraph OpenShift
+                            LB[Load Balancer<br/>Route/Service]
+                            subgraph Pod
+                                Monolith[Monolithic Application<br/>Container]
+                            end
+                            PV[(Persistent<br/>Volume)]
+                        end
+                        Users[Users] --> LB
+                        LB --> Monolith
+                        Monolith --> PV
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>Quick migration to cloud with minimal code changes</li>
+                        <li>Testing cloud infrastructure before major refactoring</li>
+                        <li>Applications with tight coupling that are difficult to decompose</li>
+                        <li>Legacy applications requiring specific OS dependencies</li>
+                        <li>First phase of a multi-stage migration strategy</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>Low initial migration effort and cost</li>
+                        <li>Reduced risk compared to full rewrite</li>
+                        <li>Immediate access to cloud infrastructure benefits</li>
+                        <li>Foundation for future decomposition</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="pattern" id="strangling-monolith">
+                <h3>Strangling the Monolith</h3>
+                <div class="pattern-description">
+                    <p>
+                        The strangler fig pattern, named after the strangler fig tree that gradually envelops and replaces its host tree, provides a methodical approach to decomposing monolithic applications. Rather than attempting a risky "big bang" rewrite, this pattern advocates for incrementally extracting functionality from the monolith into new microservices while the existing system continues to operate normally.
+                    </p>
+                    <p>
+                        Implementation typically involves placing a routing layer (often an API gateway or reverse proxy) in front of the monolith. As new microservices are developed to replace specific features or business capabilities, the router is configured to direct relevant requests to the new services while continuing to forward other requests to the monolith. This approach allows teams to deliver value continuously, validate each extraction in production, and adjust their strategy based on real-world feedback.
+                    </p>
+                    <p>
+                        The strangler pattern minimizes risk by allowing incremental migration and rollback capabilities. Teams can prioritize which features to extract based on business value, technical debt, or operational concerns. Over time, the monolith shrinks as more functionality moves to microservices, until eventually the legacy system can be completely retired. This pattern is particularly effective when combined with feature flags, allowing teams to toggle between old and new implementations during the transition period.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Strangler Pattern Migration Stages</div>
+                    <div class="mermaid">
+                    graph TB
+                        subgraph Stage1[Stage 1: Initial State]
+                            U1[Users] --> M1[Monolith<br/>All Features]
+                        end
+
+                        Stage1 -.->|Migration Progress| Stage2
+
+                        subgraph Stage2[Stage 2: First Service Extracted]
+                            U2[Users] --> R1[Router]
+                            R1 -->|Feature A| MS1[Microservice A]
+                            R1 -->|Other Features| M2[Monolith<br/>Remaining Features]
+                        end
+
+                        Stage2 -.->|Continue Migration| Stage3
+
+                        subgraph Stage3[Stage 3: Final State]
+                            U3[Users] --> R2[Router]
+                            R2 --> MS2A[Microservice A]
+                            R2 --> MS2B[Microservice B]
+                            R2 --> MS2C[Microservice C]
+                        end
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>Migrating large, complex monolithic applications</li>
+                        <li>When business continuity is critical during migration</li>
+                        <li>Organizations wanting to spread migration risk over time</li>
+                        <li>Teams without capacity for a complete rewrite</li>
+                        <li>Applications with clear business domain boundaries</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>Reduced migration risk through incremental changes</li>
+                        <li>Continuous value delivery during transformation</li>
+                        <li>Ability to learn and adjust strategy along the way</li>
+                        <li>Parallel operation of old and new systems</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="pattern" id="cloud-native-frameworks">
+                <h3>Cloud-Native Frameworks</h3>
+                <div class="pattern-description">
+                    <p>
+                        Cloud-native frameworks like Spring Boot and Quarkus represent a new generation of application frameworks specifically designed for containerized, cloud-based deployment environments. These frameworks address the limitations of traditional application servers (JBoss, WebLogic, Tomcat) which were designed for long-running server processes with large memory footprints and slow startup times—characteristics that conflict with cloud-native principles of rapid scaling and efficient resource utilization.
+                    </p>
+                    <p>
+                        Spring Boot revolutionized Java application development by providing opinionated defaults, embedded servers, and simplified dependency management, resulting in applications that start in seconds rather than minutes and consume significantly less memory. Quarkus takes this further by offering native compilation capabilities through GraalVM, producing executable binaries that start in milliseconds with minimal memory footprint—ideal for serverless and highly dynamic environments.
+                    </p>
+                    <p>
+                        Migrating from traditional application servers to cloud-native frameworks typically involves refactoring application code to remove server-specific APIs and leverage framework-provided features for common concerns like configuration, health checks, and metrics. While this requires more effort than a simple lift-and-shift, the resulting applications are better suited for cloud environments, offering improved density, faster scaling, and reduced infrastructure costs. Both frameworks provide extensive ecosystem support, including integration with service meshes, observability tools, and Kubernetes-native features.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Traditional vs Cloud-Native Framework Comparison</div>
+                    <div class="mermaid">
+                    graph TB
+                        subgraph Traditional[Traditional App Server]
+                            T1[Application WAR/EAR]
+                            T2[JBoss/WebLogic<br/>~500MB Memory<br/>2-5 min startup]
+                            T1 --> T2
+                        end
+
+                        subgraph CloudNative[Cloud-Native Framework]
+                            C1[Spring Boot JAR<br/>~100MB Memory<br/>5-10 sec startup]
+                            C2[Quarkus Native<br/>~20MB Memory<br/>0.05 sec startup]
+                        end
+
+                        style Traditional fill:#ffcccc
+                        style CloudNative fill:#ccffcc
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>Modernizing Java applications for cloud deployment</li>
+                        <li>Applications requiring fast startup and low memory footprint</li>
+                        <li>Serverless or function-as-a-service deployments</li>
+                        <li>Environments with frequent auto-scaling events</li>
+                        <li>Cost optimization through improved resource density</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>Dramatically reduced startup times (milliseconds with native compilation)</li>
+                        <li>Lower memory footprint enabling higher pod density</li>
+                        <li>Better integration with cloud-native tooling and platforms</li>
+                        <li>Improved developer productivity with modern development workflows</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="pattern" id="event-driven">
+                <h3>Event-Driven Auto-Scaled Architecture</h3>
+                <div class="pattern-description">
+                    <p>
+                        Event-driven architecture represents a fundamental shift from traditional request-response patterns to a model where components react to events asynchronously. In this pattern, services communicate by producing and consuming events through a message broker or event streaming platform like Apache Kafka, Red Hat AMQ, or NATS. Events represent significant occurrences in the system—such as "order placed," "payment processed," or "inventory updated"—and services can subscribe to events they're interested in without knowing about the services that produced them.
+                    </p>
+                    <p>
+                        This architectural style provides natural loose coupling between services, as producers and consumers don't need direct knowledge of each other. Services can be added, removed, or modified without affecting other components, as long as the event contracts remain stable. The asynchronous nature of event-driven systems also enables better scalability—consumers can process events at their own pace, and the message broker provides buffering during traffic spikes, preventing cascading failures.
+                    </p>
+                    <p>
+                        In cloud environments like OpenShift, event-driven architectures integrate seamlessly with auto-scaling capabilities. Services can scale based on message queue depth, ensuring that consumer pods automatically increase when events accumulate and decrease during quiet periods. This pattern is particularly powerful for building resilient, distributed systems that can handle variable load and continue operating even when individual components fail. Technologies like KEDA (Kubernetes Event-Driven Autoscaling) can automatically scale workloads based on event sources, creating truly responsive, self-managing systems.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Event-Driven Architecture with Auto-Scaling</div>
+                    <div class="mermaid">
+                    graph TB
+                        subgraph Producers
+                            P1[Order Service]
+                            P2[User Service]
+                        end
+
+                        subgraph EventBus[Event Bus / Message Broker]
+                            T1[Order Events Topic]
+                            T2[User Events Topic]
+                        end
+
+                        subgraph Consumers
+                            C1[Inventory Service<br/>Auto-scales on queue depth]
+                            C2[Notification Service<br/>Auto-scales on queue depth]
+                            C3[Analytics Service<br/>Auto-scales on queue depth]
+                        end
+
+                        P1 -->|Publishes| T1
+                        P2 -->|Publishes| T2
+                        T1 --> C1
+                        T1 --> C2
+                        T2 --> C2
+                        T1 --> C3
+                        T2 --> C3
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>Systems with variable or unpredictable load patterns</li>
+                        <li>Applications requiring high resilience and fault tolerance</li>
+                        <li>Complex workflows with multiple processing stages</li>
+                        <li>Real-time data processing and streaming analytics</li>
+                        <li>Microservices needing loose coupling</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>Loose coupling between services</li>
+                        <li>Natural buffering and load leveling</li>
+                        <li>Improved fault tolerance and resilience</li>
+                        <li>Automatic scaling based on actual demand</li>
+                        <li>Temporal decoupling allows services to process at their own pace</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="pattern" id="cqrs">
+                <h3>CQRS and Event Sourcing</h3>
+                <div class="pattern-description">
+                    <p>
+                        Command Query Responsibility Segregation (CQRS) is an architectural pattern that separates read operations (queries) from write operations (commands) into distinct models. While traditional architectures use a single data model for both reading and writing, CQRS recognizes that these operations often have different requirements, constraints, and optimization strategies. The write model focuses on business logic validation, consistency, and transactional integrity, while the read model optimizes for query performance, denormalization, and specific view requirements.
+                    </p>
+                    <p>
+                        Event Sourcing complements CQRS by storing the state of a system as a sequence of events rather than just the current state. Instead of updating records in place, every change is recorded as an immutable event in an append-only log. The current state can be reconstructed by replaying these events from the beginning. This approach provides a complete audit trail, enables temporal queries ("what was the state at time X?"), and allows rebuilding read models from scratch if requirements change.
+                    </p>
+                    <p>
+                        When combined, CQRS and Event Sourcing create powerful architectures for complex domains. Commands generate events that are stored in the event store and published to event streams. These events update the write model and flow to read model projections, which can be optimized for specific query patterns. Different read models can be built from the same event stream, each tailored to specific UI or reporting needs. This pattern is particularly valuable in financial systems, e-commerce platforms, and any domain requiring strong auditability, complex business logic, or sophisticated read requirements. However, it introduces complexity and eventual consistency that must be carefully managed.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">CQRS and Event Sourcing Pattern</div>
+                    <div class="mermaid">
+                    graph TB
+                        UI[User Interface]
+
+                        subgraph Write Side
+                            CMD[Command Handler]
+                            AGG[Aggregates/Domain Model]
+                            ES[(Event Store)]
+                        end
+
+                        subgraph Event Bus
+                            EB[Event Stream]
+                        end
+
+                        subgraph Read Side
+                            PROJ[Event Projections]
+                            RDB1[(Optimized Read DB 1<br/>Current State View)]
+                            RDB2[(Optimized Read DB 2<br/>Reporting View)]
+                        end
+
+                        UI -->|Commands| CMD
+                        CMD --> AGG
+                        AGG -->|Events| ES
+                        ES -->|Publish| EB
+                        EB --> PROJ
+                        PROJ --> RDB1
+                        PROJ --> RDB2
+                        UI -->|Queries| RDB1
+                        UI -->|Queries| RDB2
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>Complex business domains with sophisticated write logic</li>
+                        <li>Applications requiring complete audit trails</li>
+                        <li>Systems needing multiple optimized read models</li>
+                        <li>Financial systems, booking systems, or inventory management</li>
+                        <li>Scenarios where read and write patterns differ significantly</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>Independent scaling of read and write workloads</li>
+                        <li>Complete audit trail and temporal queries</li>
+                        <li>Optimized data models for different access patterns</li>
+                        <li>Ability to rebuild read models from events</li>
+                        <li>Natural fit for event-driven architectures</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="pattern" id="api-gateway">
+                <h3>API Gateway Pattern</h3>
+                <div class="pattern-description">
+                    <p>
+                        The API Gateway pattern provides a single entry point for external clients accessing a microservices-based system. Rather than having clients communicate directly with individual microservices, all external traffic flows through the gateway, which then routes requests to the appropriate backend services. This centralized entry point serves as an intermediary that handles cross-cutting concerns and shields the internal architecture from external consumers.
+                    </p>
+                    <p>
+                        API Gateways typically handle authentication and authorization, ensuring that only authenticated users can access the system and that they have appropriate permissions for their requests. They also manage rate limiting to protect backend services from overload, SSL/TLS termination to handle encryption, request/response transformation to adapt between external and internal API formats, and protocol translation (e.g., REST to gRPC). Additionally, gateways can aggregate multiple backend calls into a single response, reducing client complexity and network chattiness.
+                    </p>
+                    <p>
+                        In OpenShift and Kubernetes environments, API Gateway functionality can be implemented using solutions like Red Hat 3scale, Kong, Apigee, or cloud-native gateways built on Envoy Proxy. The gateway integrates with service discovery mechanisms to dynamically route traffic as services scale or relocate. This pattern is essential for managing the complexity of microservices architectures, providing a stable contract for external consumers while allowing internal services to evolve independently. It also serves as a valuable point for implementing observability, logging, and metrics collection for all external-facing traffic.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">API Gateway Architecture</div>
+                    <div class="mermaid">
+                    graph TB
+                        Client1[Web Client]
+                        Client2[Mobile Client]
+                        Client3[Partner API Client]
+
+                        subgraph Gateway[API Gateway]
+                            Auth[Authentication]
+                            Rate[Rate Limiting]
+                            SSL[SSL Termination]
+                            Route[Routing & Transformation]
+                        end
+
+                        subgraph Services[Internal Microservices]
+                            S1[User Service]
+                            S2[Order Service]
+                            S3[Product Service]
+                            S4[Payment Service]
+                        end
+
+                        Client1 --> Gateway
+                        Client2 --> Gateway
+                        Client3 --> Gateway
+                        Gateway --> S1
+                        Gateway --> S2
+                        Gateway --> S3
+                        Gateway --> S4
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>Microservices architectures with multiple external clients</li>
+                        <li>Systems requiring centralized authentication and authorization</li>
+                        <li>Applications needing rate limiting and traffic management</li>
+                        <li>APIs requiring protocol translation or request aggregation</li>
+                        <li>Scenarios where internal architecture must be hidden from clients</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>Single entry point simplifies client implementation</li>
+                        <li>Centralized management of cross-cutting concerns</li>
+                        <li>Reduced coupling between clients and services</li>
+                        <li>Enhanced security through centralized authentication</li>
+                        <li>Simplified monitoring and logging of external traffic</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="pattern" id="circuit-breaker">
+                <h3>Circuit Breaker and Retry Logic</h3>
+                <div class="pattern-description">
+                    <p>
+                        The Circuit Breaker pattern provides resilience in distributed systems by preventing cascading failures when dependent services become unavailable or unresponsive. Inspired by electrical circuit breakers, this pattern monitors calls to external services and "trips" (opens) when failures exceed a threshold, immediately returning errors instead of waiting for timeouts. This prevents threads from being tied up waiting for failing services and gives the struggling service time to recover.
+                    </p>
+                    <p>
+                        A circuit breaker operates in three states: Closed (normal operation, requests flow through), Open (service is failing, requests are immediately rejected with a fallback response), and Half-Open (testing if the service has recovered by allowing limited requests through). When combined with retry logic, the pattern becomes even more powerful—transient failures can be automatically retried with exponential backoff, while persistent failures trigger the circuit breaker to protect the system.
+                    </p>
+                    <p>
+                        In cloud-native environments, circuit breakers can be implemented at the application level using libraries like Resilience4j, Hystrix (deprecated but influential), or Polly, or externalized to a service mesh like Istio which provides circuit breaking without application code changes. Retry logic should employ exponential backoff with jitter to avoid thundering herd problems. Timeouts are also critical—setting appropriate connection and request timeouts prevents indefinite waiting. Together, these patterns create self-healing systems that gracefully degrade rather than catastrophically fail when dependencies are unavailable.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Circuit Breaker State Transitions</div>
+                    <div class="mermaid">
+                    stateDiagram-v2
+                        [*] --> Closed
+                        Closed --> Open: Failure threshold exceeded
+                        Open --> HalfOpen: Timeout expires
+                        HalfOpen --> Closed: Success threshold met
+                        HalfOpen --> Open: Failure occurs
+
+                        note right of Closed
+                            Requests flow normally
+                            Failures counted
+                        end note
+
+                        note right of Open
+                            Requests fail immediately
+                            Return fallback response
+                        end note
+
+                        note right of HalfOpen
+                            Limited requests allowed
+                            Testing service recovery
+                        end note
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>Microservices architectures with multiple service dependencies</li>
+                        <li>Systems calling external APIs or third-party services</li>
+                        <li>Applications requiring graceful degradation during failures</li>
+                        <li>Distributed systems prone to cascading failures</li>
+                        <li>Services experiencing intermittent network issues</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>Prevents cascading failures across distributed systems</li>
+                        <li>Reduces resource consumption during service outages</li>
+                        <li>Provides fast failure detection and response</li>
+                        <li>Enables graceful degradation with fallback responses</li>
+                        <li>Gives failing services time to recover</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="pattern" id="service-discovery">
+                <h3>Service Discovery</h3>
+                <div class="pattern-description">
+                    <p>
+                        Service Discovery solves the problem of how services in a dynamic cloud environment locate and communicate with each other. In traditional architectures, service endpoints were often hardcoded in configuration files with static IP addresses and ports. This approach breaks down in container orchestration platforms like Kubernetes and OpenShift, where pods are ephemeral, can be rescheduled on different nodes, and scale up and down dynamically with changing IP addresses.
+                    </p>
+                    <p>
+                        Kubernetes provides built-in service discovery through its Service resource, which creates a stable DNS name and virtual IP for a set of pods. When a service wants to communicate with another service, it simply connects to the service name (e.g., "user-service") rather than an IP address. Kubernetes DNS resolves this name to the service's cluster IP, which in turn load balances across all healthy pod endpoints. This abstraction means application code never needs to know about specific pod locations or handle pod failures—Kubernetes automatically updates service endpoints as pods come and go.
+                    </p>
+                    <p>
+                        The service discovery pattern integrates seamlessly with health checks, as Kubernetes only routes traffic to pods that pass their readiness probes. For cross-namespace or external service discovery, fully qualified domain names (FQDNs) can be used. Some organizations also implement service meshes like Istio, which provide additional service discovery features including advanced load balancing algorithms, circuit breaking, and automatic retry logic. By removing hardcoded endpoints and leveraging platform-native service discovery, applications become more resilient, portable, and cloud-native.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Kubernetes Service Discovery</div>
+                    <div class="mermaid">
+                    graph TB
+                        subgraph App[Application Pod]
+                            Code[Application Code<br/>connects to 'backend-service']
+                        end
+
+                        subgraph DNS[Kubernetes DNS]
+                            CoreDNS[CoreDNS<br/>Resolves service names]
+                        end
+
+                        subgraph Service[Kubernetes Service]
+                            SVC[backend-service<br/>ClusterIP: 10.96.0.10]
+                        end
+
+                        subgraph Pods[Backend Pods]
+                            Pod1[Pod 1<br/>10.244.0.5]
+                            Pod2[Pod 2<br/>10.244.1.8]
+                            Pod3[Pod 3<br/>10.244.2.3]
+                        end
+
+                        Code -->|1. DNS Lookup| CoreDNS
+                        CoreDNS -->|2. Returns ClusterIP| Code
+                        Code -->|3. Connects to Service| SVC
+                        SVC -->|4. Load Balances| Pod1
+                        SVC --> Pod2
+                        SVC --> Pod3
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>All microservices running in Kubernetes/OpenShift</li>
+                        <li>Applications requiring dynamic service location</li>
+                        <li>Systems with auto-scaling services</li>
+                        <li>Multi-environment deployments (dev, staging, production)</li>
+                        <li>Any application avoiding hardcoded service endpoints</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>Eliminates hardcoded IP addresses and ports</li>
+                        <li>Automatic adaptation to pod scaling and rescheduling</li>
+                        <li>Built-in load balancing across service instances</li>
+                        <li>Simplified cross-service communication</li>
+                        <li>Platform-native implementation requiring no additional infrastructure</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="pattern" id="sidecar">
+                <h3>Sidecar Pattern</h3>
+                <div class="pattern-description">
+                    <p>
+                        The Sidecar pattern extends and enhances the functionality of an application container by deploying a helper container alongside it in the same Kubernetes pod. The sidecar container shares the same network namespace, storage volumes, and lifecycle as the main application container, but runs a separate process with a distinct concern. This pattern allows you to add capabilities to applications without modifying their code, following the principle of separation of concerns.
+                    </p>
+                    <p>
+                        Common use cases for sidecars include log forwarding (shipping logs to centralized systems), metrics collection and export (running a Prometheus exporter), security proxies (handling encryption and authentication), configuration synchronization (watching for config changes and reloading), and service mesh proxies (Envoy proxies for traffic management). The sidecar has access to the same resources as the main container and can communicate over localhost, making integration straightforward.
+                    </p>
+                    <p>
+                        This pattern is particularly valuable in polyglot environments where you have applications written in different languages. Rather than implementing common functionality like logging or monitoring in each language, you deploy language-agnostic sidecars that provide these capabilities universally. Service meshes like Istio automatically inject Envoy proxy sidecars into every pod, transparently adding traffic management, security, and observability features without any application code changes. The sidecar pattern enables the composition of complex functionality from simple, focused containers while maintaining clear boundaries and independent deployment and scaling characteristics.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Sidecar Pattern</div>
+                    <div class="mermaid">
+                    graph TB
+                        subgraph Pod[Kubernetes Pod]
+                            subgraph Containers[Shared Namespace & Volumes]
+                                App[Application Container<br/>Main business logic]
+                                Sidecar1[Log Forwarder Sidecar<br/>Ships logs to central system]
+                                Sidecar2[Metrics Exporter Sidecar<br/>Exposes Prometheus metrics]
+                            end
+                            Vol[Shared Volume]
+                        end
+
+                        App -.->|localhost| Sidecar1
+                        App -.->|localhost| Sidecar2
+                        App --> Vol
+                        Sidecar1 --> Vol
+
+                        Sidecar1 -->|Forwards| LogSys[Log Aggregation System]
+                        Sidecar2 -->|Scraped by| Prom[Prometheus]
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>Adding cross-cutting concerns without modifying application code</li>
+                        <li>Polyglot environments requiring consistent capabilities</li>
+                        <li>Service mesh implementations (Envoy proxy sidecars)</li>
+                        <li>Log shipping, metrics export, or monitoring agents</li>
+                        <li>Security proxies and authentication handlers</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>Separation of concerns between business logic and infrastructure</li>
+                        <li>No application code changes required</li>
+                        <li>Shared lifecycle and resource access</li>
+                        <li>Language-agnostic implementation of common features</li>
+                        <li>Independent versioning and updates of sidecars</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="pattern" id="service-mesh">
+                <h3>Service Mesh</h3>
+                <div class="pattern-description">
+                    <p>
+                        A Service Mesh is a dedicated infrastructure layer that manages service-to-service communication within a microservices architecture. It provides critical networking capabilities including traffic management, security, and observability without requiring changes to application code. The mesh typically works by injecting a sidecar proxy (usually Envoy) into every pod, which intercepts all network traffic entering and leaving the application container.
+                    </p>
+                    <p>
+                        Service meshes like Istio, Linkerd, or Red Hat OpenShift Service Mesh provide sophisticated traffic management features including intelligent load balancing, circuit breaking, retries, timeouts, and fault injection for chaos testing. They enable advanced deployment strategies like canary releases, A/B testing, and traffic mirroring. On the security front, service meshes provide mutual TLS (mTLS) authentication between services, ensuring encrypted communication and strong service identity without application involvement.
+                    </p>
+                    <p>
+                        Perhaps most valuably, service meshes automatically instrument all service-to-service communication with rich telemetry. They generate metrics for request rates, error rates, and latencies, create distributed traces showing request flows across services, and produce access logs for all traffic. This observability is comprehensive and consistent across all services regardless of programming language. The control plane allows operators to configure policies centrally, applying routing rules, security policies, and rate limits declaratively without touching application code. While service meshes add complexity and resource overhead, they're invaluable for organizations operating large-scale microservices architectures requiring sophisticated traffic management and comprehensive observability.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Service Mesh Architecture</div>
+                    <div class="mermaid">
+                    graph TB
+                        subgraph ControlPlane[Service Mesh Control Plane]
+                            Istiod[Control Plane<br/>Config, Discovery, Certificates]
+                        end
+
+                        subgraph Pod1[Service A Pod]
+                            A[Service A Container]
+                            ProxyA[Envoy Proxy Sidecar]
+                        end
+
+                        subgraph Pod2[Service B Pod]
+                            B[Service B Container]
+                            ProxyB[Envoy Proxy Sidecar]
+                        end
+
+                        subgraph Pod3[Service C Pod]
+                            C[Service C Container]
+                            ProxyC[Envoy Proxy Sidecar]
+                        end
+
+                        subgraph Observability
+                            Metrics[Metrics: Prometheus]
+                            Traces[Traces: Jaeger]
+                            Logs[Access Logs]
+                        end
+
+                        Istiod -.->|Configure| ProxyA
+                        Istiod -.->|Configure| ProxyB
+                        Istiod -.->|Configure| ProxyC
+
+                        A -->|localhost| ProxyA
+                        B -->|localhost| ProxyB
+                        C -->|localhost| ProxyC
+
+                        ProxyA -.->|mTLS encrypted| ProxyB
+                        ProxyB -.->|mTLS encrypted| ProxyC
+
+                        ProxyA --> Metrics
+                        ProxyA --> Traces
+                        ProxyA --> Logs
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>Large-scale microservices architectures (typically 10+ services)</li>
+                        <li>Applications requiring mutual TLS between all services</li>
+                        <li>Systems needing advanced traffic management (canary, A/B testing)</li>
+                        <li>Organizations requiring comprehensive observability</li>
+                        <li>Polyglot environments needing consistent networking features</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>Automatic mutual TLS and service identity</li>
+                        <li>Comprehensive observability without code instrumentation</li>
+                        <li>Advanced traffic management and deployment strategies</li>
+                        <li>Centralized policy enforcement</li>
+                        <li>Language-agnostic implementation</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="pattern" id="init-container">
+                <h3>Init-Container Pattern</h3>
+                <div class="pattern-description">
+                    <p>
+                        Init containers are specialized containers that run and complete before the main application containers start in a Kubernetes pod. Unlike sidecar containers that run alongside the application throughout its lifetime, init containers execute sequentially, one after another, and must successfully complete before the next init container or the main application containers begin. This pattern is perfect for handling one-time setup tasks that must complete before the application can start.
+                    </p>
+                    <p>
+                        Common use cases include database schema migrations (ensuring the database schema is up to date before the application starts), cloning configuration or data from Git repositories, waiting for dependent services to be available (using tools like wait-for-it or custom readiness checks), performing initial data population, setting up file permissions and ownership, decrypting secrets or downloading certificates, and registering the service with external systems.
+                    </p>
+                    <p>
+                        Init containers can use different container images than the main application, allowing you to use specialized tools without bloating your application image. For example, you might use an init container with database migration tools like Flyway or Liquibase, while your application container uses a minimal runtime image. Init containers have access to the same volumes as the main containers, allowing them to prepare data or configuration that the application will use. If any init container fails, Kubernetes restarts the pod (according to the pod's restart policy), ensuring that initialization tasks complete successfully before the application starts. This pattern provides a clean separation between initialization logic and application runtime logic.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Init Container Execution Flow</div>
+                    <div class="mermaid">
+                    graph TB
+                        Start[Pod Created] --> Init1[Init Container 1:<br/>Clone Config from Git]
+                        Init1 -->|Success| Init2[Init Container 2:<br/>Run DB Migrations]
+                        Init2 -->|Success| Init3[Init Container 3:<br/>Wait for Dependencies]
+                        Init3 -->|Success| Main[Main Container:<br/>Application Starts]
+
+                        Init1 -.->|Failure| Restart[Pod Restart]
+                        Init2 -.->|Failure| Restart
+                        Init3 -.->|Failure| Restart
+                        Restart --> Init1
+
+                        Main --> Running[Application Running]
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>Database schema migrations before application startup</li>
+                        <li>Waiting for dependent services to become available</li>
+                        <li>Cloning configuration or data from external sources</li>
+                        <li>Setting up certificates, keys, or security configurations</li>
+                        <li>Pre-populating caches or performing data warmup</li>
+                        <li>Registering the service with external registries</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>Clean separation of initialization and runtime concerns</li>
+                        <li>Guaranteed execution order with sequential processing</li>
+                        <li>Ability to use specialized tools not needed at runtime</li>
+                        <li>Automatic retry on failure through pod restart</li>
+                        <li>Prevents application from starting before prerequisites are met</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="pattern" id="operator">
+                <h3>Operator Pattern</h3>
+                <div class="pattern-description">
+                    <p>
+                        The Operator pattern extends Kubernetes' declarative API to manage complex, stateful applications with domain-specific knowledge encoded in software. While Kubernetes primitives like Deployments and StatefulSets handle generic application lifecycle tasks, they lack the specialized knowledge required to manage complex applications like databases, message queues, or distributed systems. Operators bridge this gap by encapsulating the operational expertise that human operators would typically provide.
+                    </p>
+                    <p>
+                        An Operator consists of Custom Resource Definitions (CRDs) that define new resource types specific to the application, and a controller that watches for these custom resources and takes action to reconcile the actual state with the desired state. For example, a PostgreSQL operator might define a "PostgresCluster" resource, and when you create one, the operator automatically provisions the appropriate StatefulSets, Services, ConfigMaps, handles initialization, sets up replication, manages backups, performs version upgrades, and handles failover—all the complex tasks a DBA would normally perform manually.
+                    </p>
+                    <p>
+                        Operators follow the Kubernetes control loop pattern, continuously monitoring the cluster state and making adjustments to match the declared intent. They can handle complex scenarios like rolling upgrades with zero downtime, automated backup and restore operations, scaling with data rebalancing, certificate rotation, and disaster recovery. Popular operators exist for databases (PostgreSQL, MongoDB, Redis), messaging systems (Kafka, RabbitMQ), monitoring tools (Prometheus), and many other stateful applications. Organizations can build custom operators using frameworks like Operator SDK, Kubebuilder, or KUDO to encode their own operational knowledge and best practices. The Operator pattern represents the highest level of automation in Kubernetes, making complex applications as easy to deploy and manage as simple stateless services.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Operator Pattern</div>
+                    <div class="mermaid">
+                    graph TB
+                        User[User/DevOps] -->|Creates| CR[Custom Resource<br/>PostgresCluster: mydb]
+
+                        subgraph Operator
+                            CRD[Custom Resource Definition<br/>Defines PostgresCluster type]
+                            Controller[Operator Controller<br/>Watches & Reconciles]
+                        end
+
+                        CR -.->|Monitored by| Controller
+
+                        subgraph ManagedResources[Resources Created & Managed by Operator]
+                            STS[StatefulSet<br/>PostgreSQL Pods]
+                            SVC[Services]
+                            PVC[Persistent Volume Claims]
+                            CM[ConfigMaps]
+                            Backup[Backup CronJobs]
+                        end
+
+                        Controller -->|Creates & Manages| STS
+                        Controller -->|Creates & Manages| SVC
+                        Controller -->|Creates & Manages| PVC
+                        Controller -->|Creates & Manages| CM
+                        Controller -->|Creates & Manages| Backup
+
+                        Controller -.->|Monitors| STS
+                        Controller -->|Performs Upgrades<br/>Handles Failover<br/>Manages Backups| STS
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>Managing complex stateful applications (databases, messaging systems)</li>
+                        <li>Applications requiring specialized operational knowledge</li>
+                        <li>Automating complex lifecycle tasks (backup, restore, upgrade)</li>
+                        <li>Multi-component applications with interdependencies</li>
+                        <li>Standardizing deployment and operations across teams</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>Encodes operational expertise in software</li>
+                        <li>Automates complex lifecycle management tasks</li>
+                        <li>Provides Kubernetes-native declarative API</li>
+                        <li>Reduces operational burden and human error</li>
+                        <li>Enables self-healing and automated recovery</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="pattern" id="externalising-config">
+                <h3>Externalising Configurations</h3>
+                <div class="pattern-description">
+                    <p>
+                        Externalizing configuration is a fundamental principle of cloud-native applications, based on the Twelve-Factor App methodology. The core idea is to strictly separate configuration from code, ensuring that the same container image can be deployed across different environments (development, staging, production) with environment-specific configuration injected at runtime. Configuration includes anything that varies between deployments: database connection strings, API endpoints, feature flags, resource limits, and secrets.
+                    </p>
+                    <p>
+                        Kubernetes provides several mechanisms for externalizing configuration. ConfigMaps store non-sensitive configuration data as key-value pairs or entire configuration files, which can be injected into pods as environment variables or mounted as volumes. Secrets store sensitive information like passwords, API keys, and certificates, with base64 encoding (though this is not encryption). For enhanced security, external secret management solutions like HashiCorp Vault, AWS Secrets Manager, Azure Key Vault, or Red Hat's External Secrets Operator can integrate with Kubernetes, pulling secrets from secure vaults at runtime.
+                    </p>
+                    <p>
+                        By externalizing configuration, you achieve true environment portability—the same container image can run anywhere with different configurations. This approach eliminates the need to rebuild images for each environment, reducing deployment time and risk. It also improves security by keeping secrets out of container images and version control systems. Configuration changes can be made without rebuilding images, and Kubernetes can automatically restart pods when configuration changes (when using certain update strategies). This pattern is essential for CI/CD pipelines, where a single artifact moves through multiple environments on its way to production.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Externalized Configuration Pattern</div>
+                    <div class="mermaid">
+                    graph TB
+                        Image[Container Image<br/>Same in all environments]
+
+                        subgraph Dev[Development Environment]
+                            DevCM[ConfigMap: dev-config]
+                            DevSecret[Secret: dev-credentials]
+                            DevPod[Pod: app-dev]
+                        end
+
+                        subgraph Prod[Production Environment]
+                            ProdCM[ConfigMap: prod-config]
+                            ProdSecret[Secret: prod-credentials<br/>From Vault]
+                            ProdPod[Pod: app-prod]
+                        end
+
+                        Image --> DevPod
+                        Image --> ProdPod
+
+                        DevCM -->|Env Vars| DevPod
+                        DevSecret -->|Mounted Volume| DevPod
+
+                        ProdCM -->|Env Vars| ProdPod
+                        ProdSecret -->|Mounted Volume| ProdPod
+
+                        Vault[External Secret Vault] -.->|Synced| ProdSecret
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>All cloud-native applications (fundamental best practice)</li>
+                        <li>Multi-environment deployments (dev, staging, production)</li>
+                        <li>Applications requiring frequent configuration changes</li>
+                        <li>Systems with sensitive credentials and secrets</li>
+                        <li>CI/CD pipelines promoting the same artifact across environments</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>Single container image across all environments</li>
+                        <li>Improved security by keeping secrets out of images</li>
+                        <li>Configuration changes without image rebuilds</li>
+                        <li>Environment-specific settings without code changes</li>
+                        <li>Simplified CI/CD and deployment processes</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="pattern" id="graceful-shutdown">
+                <h3>Graceful Shutdown</h3>
+                <div class="pattern-description">
+                    <p>
+                        Graceful shutdown ensures that applications handle termination signals properly, completing in-flight work and cleaning up resources before exiting. In Kubernetes, when a pod needs to terminate (during rolling updates, scaling down, or node maintenance), Kubernetes sends a SIGTERM signal to the container's main process, then waits for a grace period (default 30 seconds) before forcibly killing the container with SIGKILL. Applications that don't handle SIGTERM properly may drop requests, leave transactions incomplete, or corrupt data.
+                    </p>
+                    <p>
+                        Implementing graceful shutdown involves several steps. First, the application must register a signal handler for SIGTERM. Upon receiving this signal, it should stop accepting new requests (often by failing health checks), complete processing of existing requests, close database connections and other resources cleanly, flush logs and metrics, and finally exit with a zero status code. Kubernetes provides preStop lifecycle hooks that can run a script or HTTP request before sending SIGTERM, allowing even more control over the shutdown process.
+                    </p>
+                    <p>
+                        The graceful shutdown pattern is particularly critical for stateful applications, long-running requests (like streaming or websocket connections), applications processing messages from queues, and services handling financial transactions. Combined with readiness probes, graceful shutdown ensures zero-downtime deployments—pods are removed from service endpoints before shutdown begins, preventing new traffic from reaching terminating pods. If your application needs more than 30 seconds to shut down gracefully, you can configure the terminationGracePeriodSeconds in the pod specification. Proper graceful shutdown is a hallmark of production-ready cloud-native applications.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Graceful Shutdown Sequence</div>
+                    <div class="mermaid">
+                    sequenceDiagram
+                        participant K8s as Kubernetes
+                        participant Pod as Application Pod
+                        participant LB as Load Balancer
+                        participant App as Application
+
+                        K8s->>Pod: 1. Trigger pod deletion
+                        K8s->>LB: 2. Remove pod from endpoints
+                        Note over LB: No new traffic to this pod
+
+                        K8s->>Pod: 3. preStop hook (if configured)
+                        Pod->>App: Execute preStop script
+
+                        K8s->>Pod: 4. Send SIGTERM
+                        Pod->>App: Forward SIGTERM signal
+
+                        Note over App: Stop accepting new requests<br/>Complete in-flight requests<br/>Close connections<br/>Flush logs
+
+                        App-->>Pod: 5. Clean exit (0)
+
+                        Note over K8s: If still running after<br/>grace period (30s default)
+                        K8s->>Pod: 6. Send SIGKILL (force kill)
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>All production applications (fundamental best practice)</li>
+                        <li>Services handling long-running requests</li>
+                        <li>Applications processing messages from queues</li>
+                        <li>Stateful applications or those managing connections</li>
+                        <li>Systems requiring zero-downtime deployments</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>Prevents dropped requests during rolling updates</li>
+                        <li>Ensures data integrity and complete transactions</li>
+                        <li>Enables zero-downtime deployments</li>
+                        <li>Clean resource cleanup and connection termination</li>
+                        <li>Improved reliability and user experience</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="pattern" id="external-cache">
+                <h3>External Cache</h3>
+                <div class="pattern-description">
+                    <p>
+                        The External Cache pattern addresses one of the fundamental challenges of cloud-native applications: maintaining stateful data in a stateless architecture. Traditional applications often store session data, user state, and cached information in-memory, which works well for single-server deployments but breaks down when multiple instances are running behind a load balancer. If session data is stored in-memory, users may experience inconsistent behavior as they're routed to different pod instances, and rolling updates would lose all cached data.
+                    </p>
+                    <p>
+                        Moving to an external cache means storing session state and cache data in a separate, shared data service that all application instances can access. Popular solutions include Redis (in-memory data store with persistence options), Memcached (pure in-memory cache), and Infinispan (distributed cache with sophisticated features). Database-backed sessions are also an option, though typically slower than in-memory caches. The external cache becomes the source of truth for session data, allowing any pod to serve any user request.
+                    </p>
+                    <p>
+                        This pattern enables true horizontal scalability—you can add or remove application pods without affecting user sessions. Rolling updates become seamless as session data persists in the external cache while application pods are replaced. The pattern also supports resilience: if an application pod crashes, users simply reconnect to a different pod that retrieves their session from the cache. For high availability, the cache itself should be deployed in a clustered or replicated configuration. While adding an external dependency introduces some complexity and latency, it's essential for stateless application design and is a prerequisite for auto-scaling and zero-downtime deployments.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">External Cache for Session Management</div>
+                    <div class="mermaid">
+                    graph TB
+                        User[User]
+                        LB[Load Balancer]
+
+                        subgraph AppPods[Application Pods - Stateless]
+                            Pod1[Pod 1]
+                            Pod2[Pod 2]
+                            Pod3[Pod 3]
+                        end
+
+                        subgraph Cache[External Cache - Stateful]
+                            Redis[(Redis Cluster<br/>Session Store)]
+                        end
+
+                        User --> LB
+                        LB -->|Request 1| Pod1
+                        LB -->|Request 2| Pod2
+                        LB -->|Request 3| Pod3
+
+                        Pod1 <-->|Read/Write Sessions| Redis
+                        Pod2 <-->|Read/Write Sessions| Redis
+                        Pod3 <-->|Read/Write Sessions| Redis
+
+                        Note[Any pod can serve any user<br/>Sessions persist across pod restarts]
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>Web applications requiring user session management</li>
+                        <li>Applications needing to share state across multiple instances</li>
+                        <li>Systems implementing horizontal auto-scaling</li>
+                        <li>Caching frequently accessed data to reduce database load</li>
+                        <li>Applications requiring zero-downtime rolling updates</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>Enables true stateless application design</li>
+                        <li>Supports horizontal scaling without session affinity</li>
+                        <li>Sessions persist across pod restarts and updates</li>
+                        <li>Improved application resilience and availability</li>
+                        <li>Reduced database load through caching</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="pattern" id="health-checks">
+                <h3>Health Check Endpoints</h3>
+                <div class="pattern-description">
+                    <p>
+                        Health check endpoints allow Kubernetes to monitor application health and make intelligent decisions about pod lifecycle management. Applications expose HTTP endpoints or commands that Kubernetes periodically executes to determine if the application is functioning correctly. Kubernetes defines three types of probes: liveness probes (is the application alive?), readiness probes (is the application ready to accept traffic?), and startup probes (has the application finished initializing?).
+                    </p>
+                    <p>
+                        Liveness probes detect when an application has entered a broken state from which it cannot recover, such as a deadlock or infinite loop. When a liveness probe fails repeatedly, Kubernetes restarts the pod, providing automatic recovery from certain failure modes. Readiness probes determine whether a pod should receive traffic—a pod that fails readiness checks is removed from service endpoints, preventing requests from reaching it. This is crucial during startup (application isn't ready yet), during temporary overload (application is alive but can't handle more requests), or during graceful shutdown.
+                    </p>
+                    <p>
+                        Startup probes handle applications with long initialization times, protecting them from being killed by liveness probes during startup. Health check endpoints should be lightweight and fast, typically returning within a second. They should verify critical dependencies: can the application connect to its database? Is it able to reach required external services? However, they shouldn't cascade failures—if a dependency is down but the application can still handle requests (perhaps with degraded functionality), the health check should still pass. Proper health checks enable Kubernetes to automatically manage application lifecycle, route traffic only to healthy pods, and recover from failures without human intervention.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Kubernetes Health Probes</div>
+                    <div class="mermaid">
+                    graph TB
+                        subgraph Pod[Application Pod Lifecycle]
+                            Start[Container Starts]
+                            Startup[Startup Probe<br/>Long initialization]
+                            Running[Container Running]
+
+                            Start --> Startup
+                            Startup -->|Success| Running
+                            Startup -->|Failure after threshold| Restart1[Restart Pod]
+
+                            Running --> Liveness[Liveness Probe<br/>Is app alive?]
+                            Running --> Readiness[Readiness Probe<br/>Ready for traffic?]
+
+                            Liveness -->|Periodic checks| Running
+                            Liveness -->|Failures exceed threshold| Restart2[Restart Pod]
+
+                            Readiness -->|Success| InService[In Service<br/>Receives traffic]
+                            Readiness -->|Failure| OutOfService[Out of Service<br/>No traffic]
+
+                            Restart1 --> Start
+                            Restart2 --> Start
+                        end
+
+                        LB[Load Balancer] -.->|Routes to| InService
+                        LB -.->|Excludes| OutOfService
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>All production applications (fundamental best practice)</li>
+                        <li>Applications with dependencies that may fail</li>
+                        <li>Services with long startup or initialization times</li>
+                        <li>Applications that may enter unrecoverable states</li>
+                        <li>Systems requiring automatic failure recovery</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>Automatic detection and recovery from failures</li>
+                        <li>Prevents routing traffic to unhealthy pods</li>
+                        <li>Enables zero-downtime deployments with rolling updates</li>
+                        <li>Self-healing infrastructure without manual intervention</li>
+                        <li>Protection during long initialization periods</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="pattern" id="umbrella-helm">
+                <h3>Umbrella Helm Chart for Multi-Component Releases</h3>
+                <div class="pattern-description">
+                    <p>
+                        An Umbrella Helm Chart provides a unified way to deploy and manage multi-component applications or entire application stacks with a single command. Rather than deploying each microservice, database, message queue, and supporting infrastructure component individually, an umbrella chart defines all components as dependencies, allowing you to deploy, upgrade, and manage them together as a cohesive unit.
+                    </p>
+                    <p>
+                        The umbrella chart itself contains minimal templates but includes a dependencies section in Chart.yaml that references all component charts. Each dependency can be another Helm chart (from a chart repository or local filesystem), and you can override their values to customize behavior. This approach is particularly valuable for complex applications where components must be deployed in a specific order or with coordinated configuration. For example, an e-commerce platform might include microservices (user-service, product-service, order-service), databases (PostgreSQL, MongoDB), caching (Redis), messaging (Kafka), and observability tools (Prometheus, Grafana).
+                    </p>
+                    <p>
+                        Umbrella charts simplify deployment workflows, as operators only need to understand one chart rather than dozens of individual components. They enable version control of the entire application stack—the umbrella chart version represents a known-good configuration of all components. Environment-specific customization is handled through values files, allowing the same umbrella chart to deploy to development, staging, and production with appropriate configurations. Dependency management ensures components are deployed in the correct order and can share values. However, umbrella charts can become complex and may couple components that could be managed independently, so they're best used for tightly integrated systems rather than completely independent services.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Umbrella Helm Chart Structure</div>
+                    <div class="mermaid">
+                    graph TB
+                        User[Operator] -->|helm install| Umbrella[Umbrella Chart<br/>e-commerce-platform:2.0]
+
+                        subgraph Dependencies
+                            Umbrella --> MS1[user-service:1.5]
+                            Umbrella --> MS2[product-service:2.1]
+                            Umbrella --> MS3[order-service:1.8]
+                            Umbrella --> DB1[postgresql:14.2]
+                            Umbrella --> DB2[mongodb:6.0]
+                            Umbrella --> Cache[redis:7.0]
+                            Umbrella --> Queue[kafka:3.3]
+                        end
+
+                        subgraph Values[Configuration]
+                            DevValues[values-dev.yaml]
+                            ProdValues[values-prod.yaml]
+                        end
+
+                        DevValues -.->|Override| Umbrella
+                        ProdValues -.->|Override| Umbrella
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>Multi-component applications with tight integration</li>
+                        <li>Microservices that need coordinated deployment</li>
+                        <li>Full-stack applications with services and infrastructure</li>
+                        <li>Applications requiring specific component deployment ordering</li>
+                        <li>Standardized application stacks deployed repeatedly</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>Single command deployment of complex applications</li>
+                        <li>Coordinated versioning of all components</li>
+                        <li>Simplified configuration management</li>
+                        <li>Dependency ordering and shared values</li>
+                        <li>Consistent deployments across environments</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="pattern" id="log-stdout">
+                <h3>Log to Standard Outputs</h3>
+                <div class="pattern-description">
+                    <p>
+                        Logging to standard output (stdout) and standard error (stderr) is a fundamental principle of cloud-native application design, originating from the Twelve-Factor App methodology. Instead of writing logs to files on disk, applications write all log output to their standard streams, treating logs as event streams. The container runtime captures these streams, and the orchestration platform handles log aggregation, routing, and storage centrally.
+                    </p>
+                    <p>
+                        This approach eliminates the need for applications to manage log rotation, disk space, or log shipping infrastructure. In Kubernetes and OpenShift, logs written to stdout/stderr are automatically collected by the container runtime (containerd, CRI-O) and can be accessed via `kubectl logs` or `oc logs`. For production environments, these logs are typically forwarded to centralized logging systems like Elasticsearch (EFK stack), Splunk, or cloud provider logging services (CloudWatch, Stackdriver, Azure Monitor) using log aggregators like Fluentd, Fluent Bit, or OpenShift's built-in logging.
+                    </p>
+                    <p>
+                        Logging to stdout also simplifies containerization—container images don't need to include log shipping agents or configure file paths, and the same image works across all environments. Developers can view logs locally using docker logs or kubectl logs, and operations teams can centralize all logs regardless of application language or framework. This pattern requires applications to be stateless regarding logs—they produce logs and forget about them, trusting the platform to handle persistence and analysis. Combined with structured logging (JSON format), this approach enables powerful log analysis, correlation across services, and integration with observability platforms.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Cloud-Native Logging Architecture</div>
+                    <div class="mermaid">
+                    graph TB
+                        subgraph Pod[Application Pod]
+                            App[Application] -->|stdout/stderr| Runtime[Container Runtime]
+                        end
+
+                        subgraph Node[Kubernetes Node]
+                            Runtime --> LogFile[/var/log/containers/]
+                            Agent[Log Shipper Agent<br/>Fluentd/Fluent Bit]
+                        end
+
+                        LogFile --> Agent
+
+                        subgraph Central[Centralized Logging]
+                            Aggregator[Log Aggregator]
+                            Storage[(Elasticsearch/<br/>S3/CloudWatch)]
+                            Viz[Kibana/<br/>Grafana]
+                        end
+
+                        Agent -->|Ships logs| Aggregator
+                        Aggregator --> Storage
+                        Storage --> Viz
+
+                        DevOps[Developers/Ops] -->|Query| Viz
+                        DevOps -->|Quick debug| Pod
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>All containerized applications (fundamental best practice)</li>
+                        <li>Microservices requiring centralized log aggregation</li>
+                        <li>Applications deployed across multiple environments</li>
+                        <li>Systems needing correlation of logs across services</li>
+                        <li>Cloud-native applications following Twelve-Factor principles</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>No log rotation or disk space management needed</li>
+                        <li>Simplified containerization without file paths</li>
+                        <li>Platform handles log collection and aggregation</li>
+                        <li>Easy local development and debugging</li>
+                        <li>Enables centralized logging and analysis</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="pattern" id="observability">
+                <h3>Observability Instrumentation</h3>
+                <div class="pattern-description">
+                    <p>
+                        Observability instrumentation transforms applications from black boxes into transparent systems that expose their internal state and behavior. While traditional monitoring asks "is the system up?", observability asks "why is the system behaving this way?" This requires applications to emit three key signals: metrics (quantitative measurements over time), traces (request flows through distributed systems), and logs (detailed event records). Together, these signals enable teams to understand system behavior, diagnose issues, and optimize performance.
+                    </p>
+                    <p>
+                        Metrics should be exposed in Prometheus format on a standardized endpoint (typically /metrics on port 8080 or a dedicated metrics port). Key metrics include the "RED method" (Rate, Errors, Duration) for request-based services and "USE method" (Utilization, Saturation, Errors) for resources. Applications should instrument business-relevant metrics like queue depth, active users, transaction amounts, and feature usage, not just technical metrics. These custom metrics enable intelligent auto-scaling based on actual business load.
+                    </p>
+                    <p>
+                        Distributed tracing provides visibility into request flows across microservices, using standards like OpenTelemetry, Jaeger, or Zipkin. Each service propagates trace context (trace ID, span ID) to downstream services, creating a complete picture of how a request traverses the system. This is invaluable for identifying bottlenecks, understanding dependencies, and diagnosing issues that span multiple services. Modern observability platforms like Datadog, New Relic, or open-source stacks (Prometheus, Grafana, Jaeger, Loki) combine all three signals, enabling correlation between metrics, traces, and logs for comprehensive system understanding.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Three Pillars of Observability</div>
+                    <div class="mermaid">
+                    graph TB
+                        subgraph App[Instrumented Application]
+                            Code[Application Code<br/>with instrumentation]
+                            Metrics[/metrics endpoint<br/>Prometheus format]
+                            Traces[Trace export<br/>OpenTelemetry]
+                            Logs[Structured logs<br/>JSON to stdout]
+                        end
+
+                        subgraph Collection[Collection & Storage]
+                            Prom[(Prometheus<br/>Metrics)]
+                            Jaeger[(Jaeger<br/>Traces)]
+                            Loki[(Loki/ELK<br/>Logs)]
+                        end
+
+                        subgraph Visualization[Visualization & Analysis]
+                            Grafana[Grafana Dashboards]
+                            Alerts[Alert Manager]
+                            Trace UI[Trace UI]
+                        end
+
+                        Code --> Metrics
+                        Code --> Traces
+                        Code --> Logs
+
+                        Metrics -->|Scraped| Prom
+                        Traces --> Jaeger
+                        Logs --> Loki
+
+                        Prom --> Grafana
+                        Jaeger --> Trace UI
+                        Loki --> Grafana
+                        Prom --> Alerts
+
+                        Grafana -.->|Correlate| Trace UI
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>All production applications (critical for operations)</li>
+                        <li>Microservices architectures requiring request tracing</li>
+                        <li>Applications with complex distributed workflows</li>
+                        <li>Systems requiring performance optimization</li>
+                        <li>Services implementing SLOs and SLAs</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>Deep visibility into application behavior and performance</li>
+                        <li>Faster troubleshooting and root cause analysis</li>
+                        <li>Request flow visualization across distributed systems</li>
+                        <li>Data-driven optimization and capacity planning</li>
+                        <li>Enables intelligent alerting and auto-scaling</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="pattern" id="auto-scaling">
+                <h3>Auto-Scaling on Application Metrics</h3>
+                <div class="pattern-description">
+                    <p>
+                        Auto-scaling on application metrics extends Kubernetes' native Horizontal Pod Autoscaler (HPA) beyond simple CPU and memory metrics to scale based on business-relevant signals. While CPU and memory scaling is useful, it often doesn't reflect actual application load—a service might be CPU-light but queue-constrained, or memory-efficient but handling too many concurrent requests. Application-specific metrics provide more accurate scaling triggers.
+                    </p>
+                    <p>
+                        Common application metrics for auto-scaling include message queue depth (scale up when the queue grows, indicating backlog), HTTP request latency (scale up when response times increase), active database connections, concurrent user sessions, custom business metrics (orders per minute, search queries, API calls), and error rates. These metrics directly reflect the application's ability to handle load and provide more responsive scaling than resource-based metrics alone.
+                    </p>
+                    <p>
+                        Implementation typically involves exposing metrics via Prometheus, configuring the Metrics Server and Prometheus Adapter to make these metrics available to Kubernetes, and creating HPA resources that reference custom metrics. For event-driven workloads, KEDA (Kubernetes Event-Driven Autoscaling) provides even more sophisticated scaling based on external event sources like message queues (Kafka, RabbitMQ, SQS), databases, HTTP endpoints, or cloud services. KEDA can even scale to zero when there's no work, optimizing resource utilization. This pattern creates truly responsive systems that automatically scale based on actual demand rather than proxy metrics.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Application Metrics-Based Auto-Scaling</div>
+                    <div class="mermaid">
+                    graph TB
+                        subgraph App[Application Pods]
+                            Pod1[Pod 1<br/>/metrics]
+                            Pod2[Pod 2<br/>/metrics]
+                            PodN[Pod N<br/>/metrics]
+                        end
+
+                        Queue[(Message Queue<br/>Queue Depth: 150)]
+
+                        subgraph Metrics[Metrics Collection]
+                            Prom[Prometheus]
+                            Adapter[Prometheus Adapter]
+                        end
+
+                        subgraph Scaling[Auto-Scaling]
+                            HPA[Horizontal Pod Autoscaler<br/>Target: queue_depth < 50]
+                            KEDA[KEDA Scaler<br/>Event-based scaling]
+                        end
+
+                        Pod1 -->|Exposes metrics| Prom
+                        Pod2 -->|Exposes metrics| Prom
+                        PodN -->|Exposes metrics| Prom
+                        Queue -->|Monitors| KEDA
+
+                        Prom --> Adapter
+                        Adapter -->|Custom metrics API| HPA
+                        HPA -->|Scale decision| App
+                        KEDA -->|Scale decision| App
+
+                        Note[Queue depth rising<br/>→ Scale up pods<br/>Queue empty<br/>→ Scale down to 0]
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>Event-driven architectures with message queues</li>
+                        <li>Applications with variable traffic patterns</li>
+                        <li>Services where business metrics reflect load better than CPU/memory</li>
+                        <li>Queue processors and background job workers</li>
+                        <li>APIs with latency SLAs requiring responsive scaling</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>More responsive scaling based on actual business load</li>
+                        <li>Better resource utilization and cost optimization</li>
+                        <li>Maintains SLAs by scaling before resource exhaustion</li>
+                        <li>Scale-to-zero for event-driven workloads</li>
+                        <li>Improved user experience through performance maintenance</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="pattern" id="external-db">
+                <h3>External Database-as-a-Service</h3>
+                <div class="pattern-description">
+                    <p>
+                        The External Database-as-a-Service pattern moves database management entirely outside of OpenShift to managed cloud database services. Instead of running databases as StatefulSets within Kubernetes, applications connect to external databases provided by cloud vendors (AWS RDS, Azure Database, Google Cloud SQL) or dedicated database services. This approach trades some control for operational simplicity, leveraging cloud provider expertise in running production databases.
+                    </p>
+                    <p>
+                        Managed database services provide significant operational benefits: automated backups and point-in-time recovery, high availability with automatic failover, security patching and version upgrades managed by the provider, performance monitoring and optimization recommendations, scaling capabilities (both vertical and read replicas), and enterprise features like encryption at rest and in transit. Database administrators can focus on schema design and query optimization rather than infrastructure management.
+                    </p>
+                    <p>
+                        Applications connect to external databases using standard connection strings, typically stored in Kubernetes Secrets or retrieved from external secret managers. Network connectivity requires proper configuration—databases may be in the same VPC/VNet as the Kubernetes cluster, accessible via VPC peering, or connected through private endpoints/service endpoints. Security groups and network policies must allow traffic between the cluster and database. This pattern is particularly valuable for organizations without deep database operations expertise, those prioritizing developer productivity, or applications with compliance requirements where managed services provide certified compliance. The trade-off is reduced control, potential vendor lock-in, and data transfer costs, but for many organizations, the operational benefits outweigh these concerns.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">External Database-as-a-Service</div>
+                    <div class="mermaid">
+                    graph TB
+                        subgraph K8s[OpenShift/Kubernetes Cluster]
+                            App1[Application Pod 1]
+                            App2[Application Pod 2]
+                            App3[Application Pod 3]
+                            Secret[Secret<br/>DB Connection String]
+                        end
+
+                        subgraph Cloud[Cloud Provider Managed Service]
+                            subgraph RDS[AWS RDS / Azure Database / Cloud SQL]
+                                Primary[(Primary Database<br/>Auto-backups<br/>Patching)]
+                                Replica1[(Read Replica 1)]
+                                Replica2[(Read Replica 2)]
+                            end
+                        end
+
+                        Secret -.->|Mounted| App1
+                        Secret -.->|Mounted| App2
+                        Secret -.->|Mounted| App3
+
+                        App1 -->|Writes| Primary
+                        App2 -->|Writes| Primary
+                        App3 -->|Writes| Primary
+
+                        App1 -->|Reads| Replica1
+                        App2 -->|Reads| Replica2
+                        App3 -->|Reads| Replica1
+
+                        Primary -.->|Replication| Replica1
+                        Primary -.->|Replication| Replica2
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>Organizations without dedicated database operations teams</li>
+                        <li>Applications on cloud platforms (AWS, Azure, GCP)</li>
+                        <li>Systems requiring enterprise database features and SLAs</li>
+                        <li>Compliance requirements met by managed services</li>
+                        <li>Prioritizing development velocity over infrastructure control</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>Reduced operational burden for database management</li>
+                        <li>Automated backups, patching, and high availability</li>
+                        <li>Leverage cloud provider database expertise</li>
+                        <li>Enterprise features without infrastructure complexity</li>
+                        <li>Faster time to production with less specialized knowledge</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="pattern" id="db-per-service">
+                <h3>Database per Service</h3>
+                <div class="pattern-description">
+                    <p>
+                        The Database per Service pattern is a fundamental principle of microservices architecture, ensuring that each service owns its data exclusively and other services cannot access that data directly. Each microservice has its own database instance or schema, and all access to the data must go through the service's API. This enforces loose coupling, allows services to evolve independently, and prevents the shared database anti-pattern that often undermines microservices benefits.
+                    </p>
+                    <p>
+                        By isolating data, services can choose the database technology best suited to their needs—a polyglot persistence approach. One service might use PostgreSQL for complex relational data, another might use MongoDB for document storage, a third might use Redis for caching, and a fourth might use Cassandra for time-series data. Each service can scale its database independently, optimize schemas for its specific access patterns, and perform migrations without coordinating with other teams.
+                    </p>
+                    <p>
+                        This pattern introduces challenges around data consistency and transactions spanning multiple services. Since each service has its own database, traditional ACID transactions across services aren't possible. Instead, systems must use patterns like Saga (managing distributed transactions through a series of local transactions with compensating actions) or eventual consistency with event-driven architectures. Data that needs to be accessed by multiple services should either be replicated (using events), joined at the API level, or denormalized into read models. Despite these complexities, the database-per-service pattern is essential for achieving true microservices independence, enabling teams to work autonomously, deploy independently, and evolve their data models without breaking other services.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Database per Service Pattern</div>
+                    <div class="mermaid">
+                    graph TB
+                        Client[API Client]
+
+                        subgraph UserService[User Service]
+                            UserAPI[User API]
+                            UserDB[(PostgreSQL<br/>User Data)]
+                        end
+
+                        subgraph OrderService[Order Service]
+                            OrderAPI[Order API]
+                            OrderDB[(MongoDB<br/>Order Data)]
+                        end
+
+                        subgraph InventoryService[Inventory Service]
+                            InvAPI[Inventory API]
+                            InvDB[(Cassandra<br/>Inventory Data)]
+                        end
+
+                        Client -->|Get User| UserAPI
+                        Client -->|Place Order| OrderAPI
+                        Client -->|Check Inventory| InvAPI
+
+                        UserAPI --> UserDB
+                        OrderAPI --> OrderDB
+                        InvAPI --> InvDB
+
+                        OrderAPI -.->|No direct DB access<br/>API call only| UserAPI
+                        OrderAPI -.->|No direct DB access<br/>API call only| InvAPI
+
+                        Note[Each service owns its data exclusively<br/>Cross-service access only via APIs]
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>Microservices architectures requiring true service independence</li>
+                        <li>Teams needing to deploy and scale services independently</li>
+                        <li>Systems with diverse data storage requirements (polyglot persistence)</li>
+                        <li>Organizations with autonomous teams owning services end-to-end</li>
+                        <li>Applications requiring service-level data isolation</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>Strong service boundaries and loose coupling</li>
+                        <li>Independent service deployment and scaling</li>
+                        <li>Technology choice freedom (polyglot persistence)</li>
+                        <li>Isolated schema evolution without breaking other services</li>
+                        <li>Team autonomy and reduced coordination overhead</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="pattern" id="local-volumes">
+                <h3>High-Performance Local Volumes</h3>
+                <div class="pattern-description">
+                    <p>
+                        High-Performance Local Volumes leverage local SSDs or NVMe storage attached directly to Kubernetes nodes to provide extremely low-latency, high-throughput storage for performance-critical stateful workloads. Unlike network-attached storage (NFS, iSCSI) or cloud block storage (EBS, Azure Disks), local volumes eliminate network latency entirely, providing storage performance comparable to bare-metal deployments. This comes at the cost of reduced flexibility, as data is tied to specific nodes.
+                    </p>
+                    <p>
+                        Local volumes are implemented using Kubernetes LocalVolume or LocalVolumeStaticProvisioner, which discovers local disks on nodes and creates PersistentVolumes. Pods using local volumes are bound to specific nodes (pod affinity), as the storage cannot move. This is acceptable for applications designed to handle node failures through replication, such as distributed databases (Cassandra, CockroachDB), distributed storage systems (Ceph, MinIO), or analytics engines (Elasticsearch, ClickHouse) where data is replicated across multiple nodes.
+                    </p>
+                    <p>
+                        This pattern requires careful operational planning. Node maintenance requires draining nodes and allowing applications to rebalance data. Backup strategies must account for the distributed nature of data. Pod scheduling must consider storage availability on nodes. Despite these complexities, local volumes provide unmatched performance for latency-sensitive workloads—some workloads see 10x throughput improvements compared to network storage. They're particularly valuable for databases requiring high IOPS, real-time analytics, high-frequency trading systems, or any application where storage latency significantly impacts performance. The pattern works best when combined with application-level replication and automated data rebalancing.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Local Volumes with Distributed Database</div>
+                    <div class="mermaid">
+                    graph TB
+                        subgraph Node1[Worker Node 1]
+                            LocalDisk1[Local NVMe SSD<br/>2TB]
+                            PV1[PersistentVolume<br/>local-pv-1]
+                            Pod1[Cassandra Pod 1]
+
+                            LocalDisk1 --> PV1
+                            PV1 --> Pod1
+                        end
+
+                        subgraph Node2[Worker Node 2]
+                            LocalDisk2[Local NVMe SSD<br/>2TB]
+                            PV2[PersistentVolume<br/>local-pv-2]
+                            Pod2[Cassandra Pod 2]
+
+                            LocalDisk2 --> PV2
+                            PV2 --> Pod2
+                        end
+
+                        subgraph Node3[Worker Node 3]
+                            LocalDisk3[Local NVMe SSD<br/>2TB]
+                            PV3[PersistentVolume<br/>local-pv-3]
+                            Pod3[Cassandra Pod 3]
+
+                            LocalDisk3 --> PV3
+                            PV3 --> Pod3
+                        end
+
+                        Pod1 <-.->|Replication| Pod2
+                        Pod2 <-.->|Replication| Pod3
+                        Pod3 <-.->|Replication| Pod1
+
+                        Note[Data replicated across nodes<br/>High performance local storage<br/>Node affinity required]
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>Distributed databases with built-in replication (Cassandra, CockroachDB)</li>
+                        <li>Applications requiring extremely low storage latency</li>
+                        <li>High-throughput analytics and search workloads</li>
+                        <li>Performance-critical applications where network latency is a bottleneck</li>
+                        <li>Systems with application-level data replication and recovery</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>Dramatically reduced storage latency (no network)</li>
+                        <li>Maximum throughput and IOPS performance</li>
+                        <li>Cost-effective compared to high-performance network storage</li>
+                        <li>Predictable performance without noisy neighbors</li>
+                        <li>Optimal for distributed systems with replication</li>
+                    </ul>
+                </div>
+            </article>
+
+                <footer>
+                    <p>Cloud Migration & Architecture Patterns for OpenShift and Kubernetes</p>
+                    <p>A comprehensive guide to designing, deploying, and operating cloud-native applications</p>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Pattern navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarLinks = document.querySelectorAll('.sidebar a');
+            const patterns = document.querySelectorAll('.pattern');
+
+            // Initialize Mermaid after making all patterns visible temporarily
+            patterns.forEach(p => p.style.display = 'block');
+
+            mermaid.initialize({
+                startOnLoad: true,
+                theme: 'base',
+                themeVariables: {
+                    primaryColor: '#EE0000',
+                    primaryTextColor: '#ffffff',
+                    primaryBorderColor: '#CC0000',
+                    secondaryColor: '#ffffff',
+                    secondaryTextColor: '#000000',
+                    secondaryBorderColor: '#333333',
+                    tertiaryColor: '#f9f9f9',
+                    tertiaryTextColor: '#000000',
+                    tertiaryBorderColor: '#666666',
+                    lineColor: '#CC0000',
+                    textColor: '#000000',
+                    mainBkg: '#ffffff',
+                    secondBkg: '#f9f9f9',
+                    border1: '#CC0000',
+                    border2: '#666666',
+                    noteBkg: '#FFF5F5',
+                    noteBorderColor: '#CC0000',
+                    noteTextColor: '#000000',
+                    clusterBkg: '#FFF5F5',
+                    clusterBorder: '#CC0000',
+                    defaultLinkColor: '#CC0000',
+                    edgeLabelBackground: '#ffffff',
+                    edgeLabelText: '#000000',
+                    nodeTextColor: '#000000',
+                    titleColor: '#000000',
+                    nodeBorder: '#CC0000'
+                }
+            });
+
+            // Wait for Mermaid to render, then hide patterns
+            setTimeout(() => {
+                patterns.forEach(p => p.style.display = '');
+
+                // After hiding patterns, show the one from URL hash if present
+                showPatternFromHash();
+            }, 500);
+
+            function showPattern(patternId) {
+                // Remove active class from all links and patterns
+                sidebarLinks.forEach(l => l.classList.remove('active'));
+                patterns.forEach(p => p.classList.remove('active'));
+
+                // Find and activate the corresponding link
+                const activeLink = document.querySelector(`.sidebar a[data-pattern="${patternId}"]`);
+                if (activeLink) {
+                    activeLink.classList.add('active');
+                }
+
+                // Show corresponding pattern
+                const targetPattern = document.getElementById(patternId);
+                if (targetPattern) {
+                    targetPattern.classList.add('active');
+
+                    // Scroll to top of main content
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            }
+
+            function showPatternFromHash() {
+                const hash = window.location.hash.substring(1); // Remove the # symbol
+                if (hash) {
+                    showPattern(hash);
+                } else {
+                    // No hash, show first pattern
+                    if (sidebarLinks.length > 0) {
+                        const firstPatternId = sidebarLinks[0].getAttribute('data-pattern');
+                        showPattern(firstPatternId);
+                    }
+                }
+            }
+
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    const patternId = this.getAttribute('data-pattern');
+
+                    // Update URL hash
+                    window.history.pushState(null, null, '#' + patternId);
+
+                    // Show the pattern
+                    showPattern(patternId);
+                });
+            });
+
+            // Handle browser back/forward buttons
+            window.addEventListener('hashchange', function() {
+                showPatternFromHash();
+            });
+        });
+    </script>
+</body>
+</html>

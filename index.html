@@ -243,18 +243,19 @@
             <h2>Patterns</h2>
 
             <div class="sidebar-category">
-                <h3>Migration & Architecture</h3>
+                <h3>Migration Strategies & Architecture</h3>
                 <ul>
                     <li><a href="#containerised-monolith" data-pattern="containerised-monolith">Containerised Monolith</a></li>
                     <li><a href="#strangling-monolith" data-pattern="strangling-monolith">Strangling the Monolith</a></li>
                     <li><a href="#cloud-native-frameworks" data-pattern="cloud-native-frameworks">Cloud-Native Frameworks</a></li>
                     <li><a href="#event-driven" data-pattern="event-driven">Event-Driven Architecture</a></li>
                     <li><a href="#cqrs" data-pattern="cqrs">CQRS & Event Sourcing</a></li>
+                    <li><a href="#external-cache" data-pattern="external-cache">External Cache</a></li>
                 </ul>
             </div>
 
             <div class="sidebar-category">
-                <h3>Resilience & Infrastructure</h3>
+                <h3>Resilience, Communication & Infrastructure</h3>
                 <ul>
                     <li><a href="#api-gateway" data-pattern="api-gateway">API Gateway</a></li>
                     <li><a href="#circuit-breaker" data-pattern="circuit-breaker">Circuit Breaker</a></li>
@@ -267,19 +268,21 @@
             </div>
 
             <div class="sidebar-category">
-                <h3>Configuration & Lifecycle</h3>
+                <h3>Configuration Patterns</h3>
                 <ul>
                     <li><a href="#externalising-config" data-pattern="externalising-config">Externalising Config</a></li>
                     <li><a href="#graceful-shutdown" data-pattern="graceful-shutdown">Graceful Shutdown</a></li>
-                    <li><a href="#external-cache" data-pattern="external-cache">External Cache</a></li>
-                    <li><a href="#health-checks" data-pattern="health-checks">Health Checks</a></li>
                     <li><a href="#umbrella-helm" data-pattern="umbrella-helm">Umbrella Helm Chart</a></li>
+                    <li><a href="#library-chart" data-pattern="library-chart">Library Chart</a></li>
+                    <li><a href="#chart-values-overlay" data-pattern="chart-values-overlay">Chart Values Overlay</a></li>
+                    <li><a href="#kustomize-overlay" data-pattern="kustomize-overlay">Kustomize Overlay</a></li>
                 </ul>
             </div>
 
             <div class="sidebar-category">
-                <h3>Storage & Observability</h3>
+                <h3>Storage & Observability Patterns</h3>
                 <ul>
+                    <li><a href="#health-checks" data-pattern="health-checks">Health Checks</a></li>
                     <li><a href="#log-stdout" data-pattern="log-stdout">Log to Stdout</a></li>
                     <li><a href="#observability" data-pattern="observability">Observability</a></li>
                     <li><a href="#auto-scaling" data-pattern="auto-scaling">Auto-Scaling on Metrics</a></li>
@@ -1403,6 +1406,216 @@
                         <li>Simplified configuration management</li>
                         <li>Dependency ordering and shared values</li>
                         <li>Consistent deployments across environments</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="pattern" id="library-chart">
+                <h3>Library Chart</h3>
+                <div class="pattern-description">
+                    <p>
+                        Library Charts are a specialized type of Helm chart that contains no deployable Kubernetes resources. Instead, they provide reusable template helpers, common functions, and shared logic that can be imported and used by other charts. This pattern promotes the DRY (Don't Repeat Yourself) principle by extracting common template code into a centralized library that multiple application charts can leverage.
+                    </p>
+                    <p>
+                        Library charts consist primarily of template definitions in the _helpers.tpl file (or other template files), along with a Chart.yaml that marks the chart as type: library. These charts cannot be installed directly—they exist solely to be imported as dependencies by other charts. Common uses include standardized naming conventions, label generation, resource limit calculations, probe configurations, and validation functions that ensure consistent patterns across all charts in an organization.
+                    </p>
+                    <p>
+                        Application charts declare library charts as dependencies in their Chart.yaml and can then use the library's template functions by prefixing them with the library chart name. This approach enables organizations to enforce standards, reduce duplication, and ensure consistency across multiple microservices. When the library chart is updated with improved logic or new features, all dependent charts can benefit by simply updating their dependency version. Library charts are particularly valuable in large organizations deploying many similar services, as they create a single source of truth for template logic and best practices.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Library Chart Pattern</div>
+                    <div class="mermaid">
+                    graph TB
+                        subgraph LibraryChart[Library Chart: common-helpers]
+                            Helpers[_helpers.tpl<br/>Template Functions]
+                            Labels[Label Generators]
+                            Naming[Naming Conventions]
+                            Validation[Validation Functions]
+                        end
+
+                        subgraph App1[user-service Chart]
+                            App1Chart[Chart.yaml<br/>dependency: common-helpers]
+                            App1Templates[templates/<br/>Uses library functions]
+                        end
+
+                        subgraph App2[order-service Chart]
+                            App2Chart[Chart.yaml<br/>dependency: common-helpers]
+                            App2Templates[templates/<br/>Uses library functions]
+                        end
+
+                        subgraph App3[product-service Chart]
+                            App3Chart[Chart.yaml<br/>dependency: common-helpers]
+                            App3Templates[templates/<br/>Uses library functions]
+                        end
+
+                        LibraryChart -.->|Imported by| App1
+                        LibraryChart -.->|Imported by| App2
+                        LibraryChart -.->|Imported by| App3
+
+                        App1Templates -.->|Calls| Helpers
+                        App2Templates -.->|Calls| Helpers
+                        App3Templates -.->|Calls| Helpers
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>Organizations deploying multiple similar microservices</li>
+                        <li>Enforcing standardized naming and labeling conventions</li>
+                        <li>Sharing common template logic across many charts</li>
+                        <li>Reducing duplication in Helm chart templates</li>
+                        <li>Maintaining consistency in resource configurations</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>Eliminates template duplication across charts</li>
+                        <li>Ensures consistency and enforces organizational standards</li>
+                        <li>Centralized updates benefit all dependent charts</li>
+                        <li>Simplified chart maintenance and testing</li>
+                        <li>Promotes best practices across teams</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="pattern" id="chart-values-overlay">
+                <h3>Chart Values Overlay</h3>
+                <div class="pattern-description">
+                    <p>
+                        The Chart Values Overlay pattern addresses the challenge of deploying the same Helm chart across multiple environments with different configurations. Instead of maintaining separate charts or hardcoding environment-specific values, this pattern uses multiple values files that layer configuration on top of a common baseline. Each environment has its own values file (values-dev.yaml, values-staging.yaml, values-prod.yaml) that contains only the settings that differ from the defaults.
+                    </p>
+                    <p>
+                        The base values.yaml file in the chart contains sensible defaults and configuration common to all environments. Environment-specific values files then override only what needs to change—for example, replica counts, resource limits, feature flags, or external service endpoints. When deploying, you specify which values file(s) to use with the -f flag, and Helm merges them in order, with later files taking precedence over earlier ones. You can even layer multiple values files: helm install myapp ./chart -f values.yaml -f values-prod.yaml -f values-prod-us-east.yaml.
+                    </p>
+                    <p>
+                        This pattern enables a clear separation between what varies by environment and what remains constant. It makes environment differences explicit and reviewable in version control. Developers can easily see exactly how production differs from staging, and changes to common configuration automatically apply to all environments. The overlay approach also supports progressive rollouts—you can test configuration changes in development, promote them to staging, and finally apply them to production with confidence. Combined with GitOps practices, values overlays create a powerful, auditable deployment workflow where every environment's configuration is tracked in Git and changes are applied through pull requests.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Chart Values Overlay Pattern</div>
+                    <div class="mermaid">
+                    graph TB
+                        subgraph Chart[Helm Chart]
+                            Base[values.yaml<br/>Common defaults<br/>replicas: 2<br/>memory: 512Mi]
+                        end
+
+                        subgraph Environments
+                            Dev[values-dev.yaml<br/>replicas: 1<br/>memory: 256Mi<br/>debug: true]
+                            Staging[values-staging.yaml<br/>replicas: 2<br/>memory: 512Mi<br/>monitoring: true]
+                            Prod[values-prod.yaml<br/>replicas: 5<br/>memory: 1Gi<br/>monitoring: true<br/>ha: true]
+                        end
+
+                        subgraph Deployments
+                            DevDeploy[Development<br/>helm install -f values-dev.yaml]
+                            StagingDeploy[Staging<br/>helm install -f values-staging.yaml]
+                            ProdDeploy[Production<br/>helm install -f values-prod.yaml]
+                        end
+
+                        Base -.->|Merged with| Dev
+                        Base -.->|Merged with| Staging
+                        Base -.->|Merged with| Prod
+
+                        Dev --> DevDeploy
+                        Staging --> StagingDeploy
+                        Prod --> ProdDeploy
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>Deploying the same application across multiple environments</li>
+                        <li>Managing environment-specific configuration differences</li>
+                        <li>Maintaining a common baseline with selective overrides</li>
+                        <li>GitOps workflows where configuration is version controlled</li>
+                        <li>Progressive rollout of configuration changes across environments</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>Clear visibility into environment-specific differences</li>
+                        <li>Eliminates configuration duplication</li>
+                        <li>Common changes automatically apply to all environments</li>
+                        <li>Version control tracks all configuration changes</li>
+                        <li>Supports progressive rollout and testing</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="pattern" id="kustomize-overlay">
+                <h3>Kustomize Overlay</h3>
+                <div class="pattern-description">
+                    <p>
+                        Kustomize Overlay is a template-free approach to customizing Kubernetes manifests across multiple environments. Unlike Helm which uses Go templating, Kustomize works with plain YAML files and applies patches and transformations declaratively. The pattern organizes configurations into a base directory containing standard manifests, and overlay directories (dev, staging, prod) that apply environment-specific modifications to the base.
+                    </p>
+                    <p>
+                        The base directory contains complete, valid Kubernetes manifests that represent the core application definition. Each overlay directory contains a kustomization.yaml file that references the base and specifies transformations: namespace changes, replica count adjustments, resource limit modifications, image tag overrides, ConfigMap or Secret additions, and label or annotation changes. Kustomize supports strategic merge patches (for common changes like replica counts), JSON patches (for precise modifications), and generators for ConfigMaps and Secrets from files or literals.
+                    </p>
+                    <p>
+                        This pattern provides several advantages over templating approaches. The base manifests are valid YAML that can be applied directly to a cluster, making them easy to test and understand. There's no custom template syntax to learn—just standard Kubernetes YAML and Kustomize-specific transformation directives. Changes are additive and explicit, making it easy to see exactly what differs between environments. Kustomize is built into kubectl (kubectl apply -k), requiring no additional tools. The overlay pattern works particularly well for organizations preferring to keep manifests in their most readable, template-free form while still supporting environment customization. It's widely adopted in GitOps workflows with tools like ArgoCD and Flux, which have native Kustomize support.
+                    </p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Kustomize Overlay Structure</div>
+                    <div class="mermaid">
+                    graph TB
+                        subgraph Base[base/]
+                            BaseManifests[deployment.yaml<br/>service.yaml<br/>configmap.yaml]
+                            BaseKustomize[kustomization.yaml<br/>Lists resources]
+                        end
+
+                        subgraph DevOverlay[overlays/dev/]
+                            DevKustomize[kustomization.yaml<br/>bases: ../../base<br/>replicas: 1<br/>namespace: dev]
+                            DevPatch[patch.yaml<br/>Custom patches]
+                        end
+
+                        subgraph ProdOverlay[overlays/prod/]
+                            ProdKustomize[kustomization.yaml<br/>bases: ../../base<br/>replicas: 5<br/>namespace: prod]
+                            ProdPatch[patch.yaml<br/>Custom patches]
+                            ProdConfig[configMapGenerator]
+                        end
+
+                        subgraph Deploy[Deployment]
+                            DevDeploy[kubectl apply -k overlays/dev]
+                            ProdDeploy[kubectl apply -k overlays/prod]
+                        end
+
+                        Base -.->|Referenced by| DevOverlay
+                        Base -.->|Referenced by| ProdOverlay
+
+                        DevOverlay --> DevDeploy
+                        ProdOverlay --> ProdDeploy
+                    </div>
+                </div>
+
+                <div class="use-cases">
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>Teams preferring template-free Kubernetes manifests</li>
+                        <li>GitOps workflows with ArgoCD or Flux</li>
+                        <li>Organizations wanting to avoid Helm's template complexity</li>
+                        <li>Environment customization with strategic merge or JSON patches</li>
+                        <li>Configuration management without introducing new tools</li>
+                    </ul>
+                </div>
+
+                <div class="key-benefits">
+                    <h4>Key Benefits:</h4>
+                    <ul>
+                        <li>No template syntax—pure Kubernetes YAML</li>
+                        <li>Base manifests are valid and testable independently</li>
+                        <li>Built into kubectl, no additional tools required</li>
+                        <li>Declarative, explicit environment differences</li>
+                        <li>Strong GitOps ecosystem integration</li>
                     </ul>
                 </div>
             </article>
